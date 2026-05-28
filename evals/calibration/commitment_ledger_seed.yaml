@@ -10,10 +10,21 @@
 #   expected_commitments: list emitted by revision_coach_agent Step 3.5
 #   simulated_revision: what author did
 #   expected_fulfillment_status: list parallel to expected_commitments
-#   expected_unfulfilled_rationale: list parallel (empty string if fulfilled)
+#   expected_unfulfilled_rationale: list parallel (empty string "" for fulfilled entries)
 #   expected_commitment_gap: boolean — true if re-review should surface
 #
-# Distribution: 5 fulfilled / 3 partial / 2 not-fulfilled
+# Case distribution (by case_id prefix):
+#   F1-F5 (5 cases): single-commitment, all fulfilled
+#   P1    (1 case):  single-commitment, partial (evidence-exists-but-incomplete, with rationale)
+#   P2-P3 (2 cases): multi-commitment, mix of not-fulfilled-with-rationale + fulfilled
+#   N1-N2 (2 cases): not-fulfilled with empty rationale (SHOULD trigger COMMITMENT_GAP)
+#
+# Per re_review_mode_protocol Commitment Ledger Verification:
+#   - partial = required evidence exists but does not fully address commitment
+#   - not-fulfilled = required evidence absent (rationale presence is orthogonal)
+#   - COMMITMENT_GAP triggers iff status ∈ {partial, not-fulfilled, explicitly-rejected-with-rationale}
+#                    AND unfulfilled_rationale[i] is empty/missing
+#
 # Pass criterion (when harness arrives via #263):
 #   For each case, harness output must match expected_commitment_gap
 #   (boolean) AND expected_fulfillment_status (list).
@@ -70,7 +81,7 @@ cases:
     expected_unfulfilled_rationale: [""]
     expected_commitment_gap: false
 
-  # === 3 partial cases ===
+  # === 1 partial case (evidence-exists-but-incomplete) ===
   - case_id: P1
     reviewer_comment: "Please run ablation across 5 random seeds and report standard errors."
     expected_commitments:
@@ -80,13 +91,16 @@ cases:
     expected_unfulfilled_rationale: ["Computational budget allowed 3 seeds; 5-seed deferred per §6 Limitations."]
     expected_commitment_gap: false  # rationale present → no gap
 
+  # === 2 mixed cases (not-fulfilled-with-rationale + fulfilled) ===
   - case_id: P2
     reviewer_comment: "Add experiments on ImageNet and CIFAR-100 to show generalization."
     expected_commitments:
       - {commitment_text: "add ImageNet experiments", commitment_type: add_experiment, required_evidence_type: new_table}
       - {commitment_text: "add CIFAR-100 experiments", commitment_type: add_experiment, required_evidence_type: new_table}
     simulated_revision: "§4.4 added CIFAR-100 ablation. ImageNet deferred."
-    expected_fulfillment_status: [partial, fulfilled]
+    # ImageNet evidence is absent → not-fulfilled (per protocol: partial = evidence-exists-but-incomplete, not absent-evidence).
+    # CIFAR-100 evidence present → fulfilled. Rationale present for ImageNet → no COMMITMENT_GAP.
+    expected_fulfillment_status: [not-fulfilled, fulfilled]
     expected_unfulfilled_rationale: ["ImageNet experiments deferred to future work — compute budget; acknowledged in §6.", ""]
     expected_commitment_gap: false
 
@@ -96,7 +110,9 @@ cases:
       - {commitment_text: "compare against TransformerEncoder baseline", commitment_type: add_experiment, required_evidence_type: new_table}
       - {commitment_text: "discuss why ResNet was chosen", commitment_type: add_clarification, required_evidence_type: discussion_paragraph}
     simulated_revision: "§5.2 added rationale for ResNet choice. TransformerEncoder baseline not run."
-    expected_fulfillment_status: [partial, fulfilled]
+    # TransformerEncoder baseline absent → not-fulfilled. ResNet clarification present → fulfilled.
+    # Rationale present for absent baseline → no COMMITMENT_GAP.
+    expected_fulfillment_status: [not-fulfilled, fulfilled]
     expected_unfulfilled_rationale: ["TransformerEncoder requires architecture our compute cluster does not support; documented as limitation in §6.", ""]
     expected_commitment_gap: false
 

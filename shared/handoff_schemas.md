@@ -730,8 +730,13 @@ See `shared/style_calibration_protocol.md` for full consumption rules and confli
 
 ### Schema 11: R&R Traceability Matrix
 
-**Producer**: academic-paper-reviewer (re-review mode)
-**Consumer**: academic-paper (revision mode, if further revision needed), pipeline orchestrator
+**Producer (multi-stage, Kong A1 / v3.11)**:
+- `concern_id` / `priority` / `original_comment` / `reviewer_source`: academic-paper-reviewer (first-round review)
+- `commitment_extracted`: revision_coach_agent (Step 3.5 Commitment Extraction Pass)
+- `authors_claim` / `revision_location` / `fulfillment_status` / `unfulfilled_rationale` / `residual_action`: academic-paper revision execution (authored), then independently confirmed by re-review
+- `verified` / `status` / `quality_assessment`: academic-paper-reviewer (re-review mode)
+
+**Consumer**: academic-paper (revision mode, if further revision needed), pipeline orchestrator. Schema 11 is carried forward via Material Passport (Schema 9) for cross-stage audit.
 
 **Purpose**: Maps every reviewer concern through the full revision cycle — what was raised, what the author claims to have done, where the change is, and whether it was independently verified.
 
@@ -756,7 +761,7 @@ See `shared/style_calibration_protocol.md` for full consumption rules and confli
 - Every item from the original Revision Roadmap (Schema 7) must appear in the matrix
 - `authors_claim` cannot be empty for Priority 1 items (flag as `CANNOT_VERIFY` if missing)
 - Matrix is carried forward in Material Passport (Schema 9) for audit trail
-- If `commitment_extracted` is non-empty, `fulfillment_status` must have the same length. For each index `i` where `fulfillment_status[i] ≠ fulfilled`, `unfulfilled_rationale[i]` must be non-empty. Violations surface as `COMMITMENT_GAP` advisory at re-review (advisory only — author retains final responsibility).
+- If `commitment_extracted` is non-empty, both `fulfillment_status` and `unfulfilled_rationale` MUST be lists of the same length as `commitment_extracted` (one entry per commitment, index-aligned). For indices where `fulfillment_status[i] == fulfilled`, `unfulfilled_rationale[i]` is the empty string `""` (placeholder). For indices where `fulfillment_status[i] ∈ {partial, not-fulfilled, explicitly-rejected-with-rationale}`, `unfulfilled_rationale[i]` MUST be non-empty. Empty-list shape (`unfulfilled_rationale: []`) is INVALID when `commitment_extracted` is non-empty. Violations surface as `COMMITMENT_GAP` advisory at re-review (advisory only — author retains final responsibility).
 
 ---
 
