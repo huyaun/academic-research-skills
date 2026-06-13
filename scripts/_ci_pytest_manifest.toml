@@ -199,3 +199,43 @@ path = "scripts/test_check_instruction_data_boundary.py"
 [[pytest]]
 id = "272-runtime-injection-boundary-pebble"
 path = "scripts/test_runtime_injection_boundary_xfail.py"
+
+[[pytest]]
+id = "250-title-fuzzy-false-positive-pin"
+path = "scripts/test_title_fuzzy_false_positive.py"
+
+[[pytest]]
+id = "396-rubric-weight-consistency"
+path = "scripts/test_check_rubric_weight_consistency.py"
+
+[[pytest]]
+id = "392-citation-verification-intake"
+path = "scripts/test_check_392_citation_verification_intake.py"
+
+[[pytest]]
+id = "394-submission-package-verifier"
+path = "scripts/test_verify_submission_package.py"
+
+[[pytest]]
+id = "394-submission-policy-lint"
+path = "scripts/test_check_394_submission_policy.py"
+
+[[pytest]]
+id = "413-agents-mirror-sync"
+path = "scripts/test_check_agents_mirror_sync.py"
+
+[[pytest]]
+id = "390-block-parser"
+path = "scripts/test_block_parser.py"
+
+[[pytest]]
+id = "390-anchorize-draft"
+path = "scripts/test_ars_anchorize_draft.py"
+
+[[pytest]]
+id = "390-apply-revision-patch"
+path = "scripts/test_ars_apply_revision_patch.py"
+
+[[pytest]]
+id = "390-revision-patch-discipline-lint"
+path = "scripts/test_check_390_revision_patch_discipline.py"
